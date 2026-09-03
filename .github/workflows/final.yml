@@ -1,4 +1,4 @@
-name: Build TradeShoar Official
+name: Build TradeShoar Launcher
 
 on:
   workflow_dispatch:
@@ -26,11 +26,10 @@ jobs:
 
       - name: Build Full Android App
         run: |
-          # Create complete fresh flutter project
+          rm -rf trade_app
           flutter create --org com.tradeshoar --project-name tradeshoar trade_app
           cd trade_app
 
-          # Write complete UI code
           cat << 'EOF' > lib/main.dart
           import 'package:flutter/material.dart';
 
@@ -55,38 +54,41 @@ jobs:
                 ),
                 body: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("موجودی کل حساب (تتر)", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                            SizedBox(height: 8),
+                            Text("\$25,480.00", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("موجودی کل حساب (تتر)", style: TextStyle(color: Colors.white70, fontSize: 14)),
-                          SizedBox(height: 8),
-                          Text("\$25,480.00", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
-                        ],
+                      const SizedBox(height: 24),
+                      const Text("قیمت‌های لحظه‌ای بازار", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: ListView(
+                          children: const [
+                            MarketCard(name: "Bitcoin (BTC)", price: "\$64,250", change: "+2.4%", isUp: true),
+                            MarketCard(name: "Ethereum (ETH)", price: "\$3,480", change: "+1.2%", isUp: true),
+                            MarketCard(name: "Solana (SOL)", price: "\$145.2", change: "-0.8%", isUp: false),
+                            MarketCard(name: "Tether (USDT)", price: "61,500 Toman", change: "0.0%", isUp: true),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text("قیمت‌های لحظه‌ای بازار", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: ListView(
-                        children: const [
-                          MarketCard(name: "Bitcoin (BTC)", price: "\$64,250", change: "+2.4%", isUp: true),
-                          MarketCard(name: "Ethereum (ETH)", price: "\$3,480", change: "+1.2%", isUp: true),
-                          MarketCard(name: "Solana (SOL)", price: "\$145.2", change: "-0.8%", isUp: false),
-                          MarketCard(name: "Tether (USDT)", price: "61,500 Toman", change: "0.0%", isUp: true),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             }
@@ -122,10 +124,9 @@ jobs:
           }
           EOF
 
-          # Build APK
           flutter build apk --release
 
-      - name: Upload Final APK
+      - name: Upload Launcher APK
         uses: actions/upload-artifact@v4
         with:
           name: TradeShoar-Launcher-APK
