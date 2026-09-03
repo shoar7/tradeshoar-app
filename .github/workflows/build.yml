@@ -2,10 +2,13 @@ name: Build TradeShar APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -21,14 +24,15 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Demo App
+      - name: Create and Setup App Project
         run: |
-          flutter create tradeshar_demo
-          cd tradeshar_demo
-          flutter build apk --split-per-abi
+          rm -rf tradeshar_app
+          flutter create --org com.tradeshar --project-name tradeshar_app tradeshar_app
+          cd tradeshar_app
+          flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TradeShar-APK
-          path: tradeshar_demo/build/app/outputs/flutter-apk/*.apk
+          name: TradeShar-APK-Ready
+          path: tradeshar_app/build/app/outputs/flutter-apk/app-release.apk
