@@ -1,4 +1,4 @@
-name: Build TradeShar APK
+name: Build TradeShoar APK
 
 on:
   workflow_dispatch:
@@ -24,15 +24,165 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create and Setup App Project
+      - name: Initialize TradeShoar Project
         run: |
-          rm -rf tradeshar_app
-          flutter create --org com.tradeshar --project-name tradeshar_app tradeshar_app
-          cd tradeshar_app
+          rm -rf * .github
+          mkdir -p .github/workflows
+          flutter create --org com.tradeshoar --project-name tradeshoar app_project
+          cd app_project
+
+          # Create custom TradeShoar Trading UI
+          cat << 'EOF' > lib/main.dart
+          import 'package:flutter/material.dart';
+
+          void main() {
+            runApp(const TradeShoarApp());
+          }
+
+          class TradeShoarApp extends StatelessWidget {
+            const TradeShoarApp({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return MaterialApp(
+                title: 'TradeShoar',
+                debugShowCheckedModeBanner: false,
+                theme: ThemeData.dark().copyWith(
+                  scaffoldBackgroundColor: const Color(0xFF0F172A),
+                  primaryColor: const Color(0xFF10B981),
+                  colorScheme: const ColorScheme.dark(
+                    primary: Color(0xFF10B981),
+                    secondary: Color(0xFF3B82F6),
+                  ),
+                ),
+                home: const TradingHomeScreen(),
+              );
+            }
+          }
+
+          class TradingHomeScreen extends StatefulWidget {
+            const TradingHomeScreen({super.key});
+
+            @override
+            State<TradingHomeScreen> createState() => _TradingHomeScreenState();
+          }
+
+          class _TradingHomeScreenState extends State<TradingHomeScreen> {
+            int _selectedIndex = 0;
+
+            final List<Map<String, dynamic>> _markets = [
+              {"symbol": "BTC/USDT", "price": "64,250.00", "change": "+2.45%", "isUp": true},
+              {"symbol": "ETH/USDT", "price": "3,480.50", "change": "+1.15%", "isUp": true},
+              {"symbol": "SOL/USDT", "price": "145.20", "change": "-0.85%", "isUp": false},
+              {"symbol": "TON/USDT", "price": "6.85", "change": "+5.30%", "isUp": true},
+              {"symbol": "DOGE/USDT", "price": "0.125", "change": "-1.40%", "isUp": false},
+            ];
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: const Color(0xFF1E293B),
+                  title: const Row(
+                    children: [
+                      Icon(Icons.candlestick_chart, color: Color(0xFF10B981)),
+                      SizedBox(width: 8),
+                      Text('TradeShoar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                    ],
+                  ),
+                  actions: [
+                    IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+                  ],
+                ),
+                body: ListView(
+                  padding: const EdgeInsets.all(16.0),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20.0),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E293B), Color(0xFF334155)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Total Balance (تراز کل کیف پول)", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                          const SizedBox(height: 8),
+                          const Text("\$12,450.80", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text("+8.4% This Week", style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text("Live Markets (بازار زنده)", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    ..._markets.map((m) => Card(
+                      color: const Color(0xFF1E293B),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFF334155),
+                          child: Text(m["symbol"].toString().substring(0, 1), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                        title: Text(m["symbol"], style: const TextStyle(fontWeight: FontWeight.bold)),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text("\$${m["price"]}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(
+                              m["change"],
+                              style: TextStyle(
+                                color: m["isUp"] ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+                  ],
+                ),
+                bottomNavigationBar: BottomNavigationBar(
+                  currentIndex: _selectedIndex,
+                  onTap: (i) => setState(() => _selectedIndex = i),
+                  backgroundColor: const Color(0xFF1E293B),
+                  selectedItemColor: const Color(0xFF10B981),
+                  unselectedItemColor: Colors.white54,
+                  items: const [
+                    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+                    BottomNavigationBarItem(icon: Icon(Icons.analytics), label: "Trade"),
+                    BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: "Wallet"),
+                  ],
+                ),
+              );
+            }
+          }
+          EOF
+
           flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload TradeShoar APK
         uses: actions/upload-artifact@v4
         with:
-          name: TradeShar-APK-Ready
-          path: tradeshar_app/build/app/outputs/flutter-apk/app-release.apk
+          name: TradeShoar-Official-APK
+          path: app_project/build/app/outputs/flutter-apk/app-release.apk
