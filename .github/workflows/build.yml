@@ -1,0 +1,34 @@
+name: Build TradeShar APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Create Demo App
+        run: |
+          flutter create tradeshar_demo
+          cd tradeshar_demo
+          flutter build apk --split-per-abi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TradeShar-APK
+          path: tradeshar_demo/build/app/outputs/flutter-apk/*.apk
